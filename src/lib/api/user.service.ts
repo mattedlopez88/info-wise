@@ -1,5 +1,5 @@
 import { UserPreferences } from "@/src/types/api/types";
-import { api } from "./client";
+import { api } from "./user.client";
 
 export const getUserPreferences = async (
     userId: number

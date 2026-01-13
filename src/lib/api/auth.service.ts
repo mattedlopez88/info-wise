@@ -1,5 +1,5 @@
 import { JwtResponse } from "@/src/types/api/types";
-import { api } from "./client";
+import { api } from "./user.client";
 
 export const login = async (
     email: string,
