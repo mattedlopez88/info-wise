@@ -9,6 +9,7 @@ export interface JwtResponse {
 export interface UserPreferences {
   userId: number
   categoryIds: number[]
+  shippingHour?: number
 }
 
 export interface NewsCategory {

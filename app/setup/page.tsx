@@ -9,12 +9,12 @@ import type { NewsCategory } from '@/src/types/api/types';
 import { useRouter } from 'next/navigation';
 
 const statusCopy: Record<string, string> = {
-  idle: 'Pick the beats you want to follow.',
-  saving: 'Saving your preferences...',
-  saved: 'Preferences saved. Your desk is updated.',
-  error: 'We could not save your selections. Try again.',
-  empty: 'Choose at least one category to continue.',
-  auth: 'Sign in to save your categories.',
+  idle: 'Escoge tus categorias.',
+  saving: 'Guardando tus preferencias...',
+  saved: 'Preferencias guardadas. Tu escritorio está actualizado.',
+  error: 'No pudimos guardar tus selecciones. Intenta de nuevo.',
+  empty: 'Elige al menos una categoría para continuar.',
+  auth: 'Inicia sesión para guardar tus categorías.',
 };
 
 export default function SetupPage() {
@@ -22,6 +22,7 @@ export default function SetupPage() {
   const { user, isAuthenticated } = useAuth();
   const [categories, setCategories] = useState<NewsCategory[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [shippingHour, setShippingHour] = useState<number>(8);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error' | 'empty' | 'auth'>('idle');
 
@@ -53,6 +54,9 @@ export default function SetupPage() {
       .then((data) => {
         if (!data?.categoryIds) return;
         setSelectedIds(data.categoryIds);
+        if (typeof data.shippingHour === 'number') {
+          setShippingHour(data.shippingHour);
+        }
       })
       .catch(() => {
         setStatus('idle');
@@ -83,7 +87,7 @@ export default function SetupPage() {
 
     setStatus('saving');
     try {
-      await upsertPreferences(Number(user.userId), selectedIds);
+      await upsertPreferences(Number(user.userId), selectedIds, shippingHour);
       setStatus('saved');
       router.push('/');
     } catch (error) {
@@ -106,7 +110,7 @@ export default function SetupPage() {
               className="mt-6 text-3xl font-semibold text-slate-900 sm:text-4xl"
               style={{ fontFamily: 'var(--font-fraunces)' }}
             >
-              Escoge las categorías que te interesan
+              Preferencias
             </h1>
             <p className="mt-4 max-w-xl text-sm text-slate-600">
               Tu selección determina los resúmenes que se muestran en tu feed. Guardamos la lista una vez
@@ -116,12 +120,11 @@ export default function SetupPage() {
             <div className="mt-8 rounded-[28px] border border-slate-200/80 bg-white/90 p-6 shadow-[0_24px_60px_-50px_rgba(15,23,42,0.6)] sm:p-8">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-500">InfoWise</p>
                   <p
                     className="text-xl font-semibold text-slate-900"
                     style={{ fontFamily: 'var(--font-fraunces)' }}
                   >
-                    Setup
+                    Categorias
                   </p>
                 </div>
                 <div className="text-xs text-slate-500">
@@ -150,6 +153,30 @@ export default function SetupPage() {
                     No hay categorías disponibles aún.
                   </div>
                 ) : null}
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">Hora de notificación</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={shippingHour}
+                      onChange={(event) => {
+                        const nextValue = Number.parseInt(event.target.value, 10);
+                        setShippingHour(Number.isNaN(nextValue) ? 8 : nextValue);
+                      }}
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    >
+                      {Array.from({ length: 24 }, (_, hour) => (
+                        <option key={hour} value={hour}>
+                          {hour.toString().padStart(2, '0')}:00
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">

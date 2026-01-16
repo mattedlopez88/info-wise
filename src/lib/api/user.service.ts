@@ -10,11 +10,13 @@ export const getUserPreferences = async (
 
 export const upsertPreferences = async (
     userId: number,
-    categoryIds: number[]
+    categoryIds: number[],
+    shippingHour: number
 ): Promise<UserPreferences> => {
     const res = await api.post('/user/preferences/upsert', {
         userId,
         categoryIds,
+        shippingHour,
     })
     return res.data;
 }
