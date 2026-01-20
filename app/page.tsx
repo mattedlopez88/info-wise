@@ -18,83 +18,6 @@ type StoryCard = {
   span: string;
 };
 
-const fallbackStories: StoryCard[] = [
-  {
-    id: 1,
-    title: "Ocean Data Corridors",
-    macroCategory: "Climate Desk",
-    summary:
-      "Satellites reveal new heat currents, reshaping coastal forecasts and shipping routes.",
-    date: "Sep 20, 08:45",
-    span: "xl:col-span-2 xl:row-span-2",
-  },
-  {
-    id: 2,
-    title: "Markets Quietly Rebalance",
-    macroCategory: "Business",
-    summary: "Investors rotate into resilient health and green energy names.",
-    date: "Sep 20, 07:20",
-    span: "xl:col-span-1",
-  },
-  {
-    id: 3,
-    title: "Culture: Studio Notes",
-    macroCategory: "Arts",
-    summary: "Three new galleries push kinetic light installations downtown.",
-    date: "Sep 20, 06:50",
-    span: "xl:col-span-1",
-  },
-  {
-    id: 4,
-    title: "Neighborhood Grid Upgrades",
-    macroCategory: "City",
-    summary: "Microgrids and rooftop storage pilots expand after summer trials.",
-    date: "Sep 20, 09:05",
-    span: "xl:col-span-1 xl:row-span-2",
-  },
-  {
-    id:5,
-    title: "Science: Forest Canopies",
-    macroCategory: "Science",
-    summary: "Drones map recovery after last year's wildfire season.",
-    date: "Sep 20, 10:15",
-    span: "xl:col-span-1",
-  },
-  {
-    id: 6,
-    title: "Science: Forest Canopies",
-    macroCategory: "Science",
-    summary: "Drones map recovery after last year's wildfire season.",
-    date: "Sep 20, 10:15",
-    span: "xl:col-span-1",
-  },
-  {
-    id: 7,
-    title: "Science: Forest Canopies",
-    macroCategory: "Science",
-    summary: "Drones map recovery after last year's wildfire season.",
-    date: "Sep 20, 10:15",
-    span: "xl:col-span-1",
-  },
-  {
-    id: 8,
-    title: "Ocean Data Corridors",
-    macroCategory: "Climate Desk",
-    summary:
-      "Satellites reveal new heat currents, reshaping coastal forecasts and shipping routes.",
-    date: "Sep 20, 08:45",
-    span: "xl:col-span-2 xl:row-span-2",
-  },
-  {
-    id: 9,
-    title: "Opinion: Slow Journalism",
-    macroCategory: "Perspectives",
-    summary: "Why deliberate reporting creates longer-lasting public trust.",
-    date: "Sep 20, 11:02",
-    span: "xl:col-span-2",
-  },
-];
-
 const spanPool = [
   { span: "xl:col-span-2 xl:row-span-2" },
   { span: "xl:col-span-1" },
@@ -142,7 +65,7 @@ const buildStories = (data: MacroCategory[]): StoryCard[] => {
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
   const router = useRouter();
-  const [stories, setStories] = useState<StoryCard[]>(fallbackStories);
+  const [stories, setStories] = useState<StoryCard[]>([]);
   const [hasPreferences, setHasPreferences] = useState(false);
   const [loadingStories, setLoadingStories] = useState(false);
 
@@ -155,13 +78,13 @@ export default function Home() {
   useEffect(() => {
     let active = true;
     const loadNews = async () => {
-      if (!isAuthenticated || !user?.userId) {
-        console.debug("news: no session, skipping fetch");
-        if (!active) return;
-        setHasPreferences(false);
-        setStories(fallbackStories);
-        return;
-      }
+        if (!isAuthenticated || !user?.userId) {
+          console.debug("news: no session, skipping fetch");
+          if (!active) return;
+          setHasPreferences(false);
+          setStories([]);
+          return;
+        }
 
       setLoadingStories(true);
       let preferencesFound = false;
@@ -173,7 +96,7 @@ export default function Home() {
         if (!preferencesFound) {
           if (!active) return;
           setHasPreferences(false);
-          setStories(fallbackStories);
+          setStories([]);
           return;
         }
 
@@ -195,7 +118,7 @@ export default function Home() {
           setStories([]);
         } else {
           setHasPreferences(false);
-          setStories(fallbackStories);
+          setStories([]);
         }
       } finally {
         if (!active) return;
@@ -209,9 +132,9 @@ export default function Home() {
     };
   }, [isAuthenticated, user?.userId]);
 
-  const showEmptyPreferencesState = useMemo(
-    () => hasPreferences && !loadingStories && stories.length === 0,
-    [hasPreferences, loadingStories, stories.length],
+  const showEmptyState = useMemo(
+    () => !loadingStories && stories.length === 0,
+    [loadingStories, stories.length],
   );
 
   return (
@@ -238,7 +161,7 @@ export default function Home() {
                     onClick={logout}
                     className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition hover:-translate-y-0.5"
                   >
-                    Log out
+                    Cerrar sesión
                   </button>
                 ) : (
                   <>
@@ -246,20 +169,20 @@ export default function Home() {
                       href="/login"
                       className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition hover:-translate-y-0.5"
                     >
-                      Log in
+                      Iniciar sesión
                     </Link>
                     <Link
                       href="/register"
                       className="rounded-full border border-transparent bg-slate-900 px-4 py-2 text-sm text-white shadow-sm transition hover:-translate-y-0.5"
                     >
-                      Register
+                      Crear cuenta
                     </Link>
                   </>
                 )}
                 <div className="group relative">
                   <button
                     type="button"
-                    aria-label="Open menu"
+                    aria-label="Abrir menú"
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5"
                   >
                     <svg
@@ -284,7 +207,7 @@ export default function Home() {
                       href="/setup"
                       className="flex items-center justify-between rounded-xl px-3 py-2 transition hover:bg-slate-100"
                     >
-                      Settings
+                      Preferencias
                       <svg
                         viewBox="0 0 24 24"
                         className="h-4 w-4"
@@ -303,13 +226,13 @@ export default function Home() {
               </div>
             </div>
 
-            {showEmptyPreferencesState ? (
+            {showEmptyState ? (
               <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-white/80 px-6 py-10 text-sm text-slate-600">
-                Escoge las categorías que te interesan en la página de{" "}
+                No hay noticias para mostrar por el momento. Puedes cambiar tus{" "}
                 <Link href="/setup" className="underline">
-                  configuración
+                  preferencias
                 </Link>{" "}
-                para ver noticias personalizadas aquí.
+                para ver nuevas categorías.
               </div>
             ) : (
               <section className="mt-6 grid grid-cols-1 gap-6 sm:auto-rows-[200px] sm:grid-cols-2 xl:grid-cols-3">

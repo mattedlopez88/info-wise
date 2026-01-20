@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { register } from '@/src/lib/api/auth.service';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/src/context/AuthContext';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const auth = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   // const [confirmEmail, setConfirmEmail] = useState('');
@@ -25,35 +27,35 @@ export default function RegisterPage() {
 
   const emailError = useMemo(() => {
     if (!touched.email) return '';
-    if (!email) return 'Email is required.';
-    if (!emailRegex.test(email)) return 'Enter a valid email address.';
+    if (!email) return 'Correo es obligatorio.';
+    if (!emailRegex.test(email)) return 'Ingresa un correo válido.';
     return '';
   }, [email, touched.email]);
 
   const passwordError = useMemo(() => {
     if (!touched.password) return '';
-    if (!password) return 'Password is required.';
-    if (password.length < 8) return 'Use at least 8 characters.';
+    if (!password) return 'Contraseña es obligatoria.';
+    if (password.length < 8) return 'Usa al menos 8 caracteres.';
     return '';
   }, [password, touched.password]);
 
   const confirmPasswordError = useMemo(() => {
     if (!touched.confirmPassword) return '';
-    if (!confirmPassword) return 'Confirm your password.';
-    if (password !== confirmPassword) return 'Passwords do not match.';
+    if (!confirmPassword) return 'Confirma tu contraseña.';
+    if (password !== confirmPassword) return 'Las contraseñas no coinciden.';
     return '';
   }, [password, confirmPassword, touched.confirmPassword]);
 
   const nameError = useMemo(() => {
     if (!touched.fullName) return '';
-    if (!fullName.trim()) return 'Full name is required.';
+    if (!fullName.trim()) return 'El nombre completo es obligatorio.';
     return '';
   }, [fullName, touched.fullName]);
 
   const passwordChecks = [
-    { label: 'At least 8 characters', valid: password.length >= 8 },
-    { label: 'One number', valid: /\d/.test(password) },
-    { label: 'One letter', valid: /[A-Za-z]/.test(password) },
+    { label: 'Al menos 8 caracteres', valid: password.length >= 8 },
+    { label: 'Al menos un número', valid: /\d/.test(password) },
+    { label: 'Al menos una letra', valid: /[A-Za-z]/.test(password) },
   ];
 
   const canSubmit =
@@ -68,8 +70,9 @@ export default function RegisterPage() {
     e.preventDefault();
 
     try {
-      await register(email, password);
-      router.push('/login');
+      const res = await register(email, password);
+      auth.login(res);
+      router.push('/setup');
     } catch (e) {
       console.error('Registration failed:', e);
     }
@@ -157,7 +160,7 @@ export default function RegisterPage() {
                       onChange={(event) => setPassword(event.target.value)}
                       onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
                       className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-20 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
-                      placeholder="Create a password"
+                      placeholder="Crea una contraseña segura"
                       aria-invalid={Boolean(passwordError)}
                       aria-describedby="password-error"
                     />
@@ -166,7 +169,7 @@ export default function RegisterPage() {
                       onClick={() => setShowPassword((prev) => !prev)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium uppercase tracking-[0.2em] text-slate-500"
                     >
-                      {showPassword ? 'Hide' : 'Show'}
+                      {showPassword ? 'Ocultar' : 'Mostrar'}
                     </button>
                   </div>
                   {passwordError ? (
@@ -184,7 +187,7 @@ export default function RegisterPage() {
                     onChange={(event) => setConfirmPassword(event.target.value)}
                     onBlur={() => setTouched((prev) => ({ ...prev, confirmPassword: true }))}
                     className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
-                    placeholder="Repeat your password"
+                    placeholder="Repite tu contraseña"
                     aria-invalid={Boolean(confirmPasswordError)}
                     aria-describedby="confirm-password-error"
                   />
@@ -196,7 +199,7 @@ export default function RegisterPage() {
                 </label>
 
                 <div className="rounded-2xl border border-slate-200/80 bg-[#f8f1e4] p-4 text-xs text-slate-600">
-                  <p className="text-[11px] uppercase tracking-[0.32em] text-slate-500">Password checks</p>
+                  <p className="text-[11px] uppercase tracking-[0.32em] text-slate-500">Verificaciones de contraseña</p>
                   <div className="mt-3 grid gap-2">
                     {passwordChecks.map((item) => (
                       <div key={item.label} className="flex items-center gap-2">

@@ -18,15 +18,15 @@ export default function LoginPage() {
 
   const emailError = useMemo(() => {
     if (!touched.email) return '';
-    if (!email) return 'Email is required.';
-    if (!emailRegex.test(email)) return 'Enter a valid email address.';
+    if (!email) return 'Correo es obligatorio.';
+    if (!emailRegex.test(email)) return 'Ingresa un correo válido.';
     return '';
   }, [email, touched.email]);
 
   const passwordError = useMemo(() => {
     if (!touched.password) return '';
-    if (!password) return 'Password is required.';
-    if (password.length < 8) return 'Use at least 8 characters.';
+    if (!password) return 'Contraseña es obligatoria.';
+    if (password.length < 8) return 'Usa al menos 8 caracteres.';
     return '';
   }, [password, touched.password]);
 
@@ -73,7 +73,7 @@ export default function LoginPage() {
                     onChange={(event) => setEmail(event.target.value)}
                     onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
                     className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
-                    placeholder="hello@infowise.news"
+                    placeholder="hola@infowise.news"
                     aria-invalid={Boolean(emailError)}
                     aria-describedby="email-error"
                   />
@@ -93,7 +93,7 @@ export default function LoginPage() {
                       onChange={(event) => setPassword(event.target.value)}
                       onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
                       className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-20 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
-                      placeholder="Enter your password"
+                      placeholder="Ingresa tu contraseña"
                       aria-invalid={Boolean(passwordError)}
                       aria-describedby="password-error"
                     />
@@ -102,7 +102,7 @@ export default function LoginPage() {
                       onClick={() => setShowPassword((prev) => !prev)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium uppercase tracking-[0.2em] text-slate-500"
                     >
-                      {showPassword ? 'Hide' : 'Show'}
+                      {showPassword ? 'Ocultar' : 'Mostrar'}
                     </button>
                   </div>
                   {passwordError ? (
