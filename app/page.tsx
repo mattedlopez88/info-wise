@@ -33,7 +33,7 @@ const formatStoryDate = (dateString?: string) => {
   const parsed = new Date(dateString);
   if (Number.isNaN(parsed.getTime())) return "—";
   const formatter = new Intl.DateTimeFormat("es-EC", {
-    timeZone: "America/Guayaquil",
+    timeZone: "UTC",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
