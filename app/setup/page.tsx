@@ -1,42 +1,82 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { getAllCategories } from '@/src/lib/api/news.service';
-import { getUserPreferences, upsertPreferences } from '@/src/lib/api/user.service';
-import { useAuth } from '@/src/context/AuthContext';
-import type { NewsCategory } from '@/src/types/api/types';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  CheckCircleIcon,
+  ChevronLeftIcon,
+  TriangleAlertIcon,
+  InfoIcon,
+  Loader2,
+} from "lucide-react";
+import { getAllMacrocategories } from "@/src/lib/api/news.service";
+import {
+  getUserPreferences,
+  upsertPreferences,
+} from "@/src/lib/api/user.service";
+import { useAuth } from "@/src/context/AuthContext";
+import type { MacroCategoryDto } from "@/src/types/api/types";
+import { useRouter } from "next/navigation";
 
-const statusCopy: Record<string, string> = {
-  idle: 'Escoge tus categorias.',
-  saving: 'Guardando tus preferencias...',
-  saved: 'Preferencias guardadas. Tu escritorio está actualizado.',
-  error: 'No pudimos guardar tus selecciones. Intenta de nuevo.',
-  empty: 'Elige al menos una categoría para continuar.',
-  auth: 'Inicia sesión para guardar tus categorías.',
+type Status = "idle" | "saving" | "saved" | "error" | "empty" | "auth";
+
+const statusCopy: Record<Status, string> = {
+  idle: "Escoge tus categorias.",
+  saving: "Guardando tus preferencias...",
+  saved: "Preferencias guardadas. Tu escritorio está actualizado.",
+  error: "No pudimos guardar tus selecciones. Intenta de nuevo.",
+  empty: "Elige al menos una categoría para continuar.",
+  auth: "Inicia sesión para guardar tus categorías.",
 };
+
+function StatusIndicator({ status }: { status: Status }) {
+  const Icon = useMemo(() => {
+    switch (status) {
+      case "saving":
+        return <Loader2 className="h-4 w-4 animate-spin" />;
+      case "saved":
+        return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
+      case "error":
+        return <TriangleAlertIcon className="h-4 w-4 text-red-500" />;
+      case "empty":
+        return <InfoIcon className="h-4 w-4 text-yellow-500" />;
+      case "auth":
+        return <InfoIcon className="h-4 w-4 text-blue-500" />;
+      default:
+        return null;
+    }
+  }, [status]);
+
+  return (
+    <div className="flex items-center gap-2 text-xs text-slate-500">
+      {Icon}
+      <span>{statusCopy[status]}</span>
+    </div>
+  );
+}
 
 export default function SetupPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
-  const [categories, setCategories] = useState<NewsCategory[]>([]);
+  const [macrocategories, setMacrocategories] = useState<MacroCategoryDto[]>(
+    [],
+  );
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [shippingHour, setShippingHour] = useState<number>(8);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error' | 'empty' | 'auth'>('idle');
+  const [status, setStatus] = useState<Status>("idle");
 
   useEffect(() => {
     let active = true;
     setLoading(true);
-    getAllCategories()
+    getAllMacrocategories()
       .then((data) => {
         if (!active) return;
-        setCategories(data ?? []);
+        setMacrocategories(data ?? []);
       })
       .catch(() => {
         if (!active) return;
-        setCategories([]);
+        setMacrocategories([]);
       })
       .finally(() => {
         if (!active) return;
@@ -54,16 +94,19 @@ export default function SetupPage() {
       .then((data) => {
         if (!data?.categoryIds) return;
         setSelectedIds(data.categoryIds);
-        if (typeof data.shippingHour === 'number') {
+        if (typeof data.shippingHour === "number") {
           setShippingHour(data.shippingHour);
         }
       })
       .catch(() => {
-        setStatus('idle');
+        setStatus("idle");
       });
   }, [user?.userId]);
 
-  const canSave = useMemo(() => selectedIds.length > 0 && status !== 'saving', [selectedIds, status]);
+  const canSave = useMemo(
+    () => selectedIds.length > 0 && status !== "saving",
+    [selectedIds, status],
+  );
 
   const handleToggle = (id: number) => {
     setSelectedIds((prev) => {
@@ -76,140 +119,133 @@ export default function SetupPage() {
 
   const handleSave = async () => {
     if (!isAuthenticated || !user?.userId) {
-      setStatus('auth');
+      setStatus("auth");
       return;
     }
 
     if (selectedIds.length === 0) {
-      setStatus('empty');
+      setStatus("empty");
       return;
     }
 
-    setStatus('saving');
+    setStatus("saving");
     try {
       await upsertPreferences(Number(user.userId), selectedIds, shippingHour);
-      setStatus('saved');
-      router.push('/');
+      setStatus("saved");
+      setTimeout(() => router.push("/"), 1500);
     } catch (error) {
-      setStatus('error');
+      setStatus("error");
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#ECEADE] text-slate-900">
-      <div className="relative min-h-screen overflow-hidden">
-        <div className="pointer-events-none absolute left-[-140px] top-[-120px] h-[340px] w-[340px] rounded-full bg-[#f9ddc6]/70 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-[-180px] right-[-120px] h-[320px] w-[320px] rounded-full bg-[#cfe1d4]/80 blur-3xl" />
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <div className="relative mx-auto max-w-4xl px-4 py-12">
+        <Link
+          href="/"
+          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900"
+        >
+          <ChevronLeftIcon className="h-4 w-4" />
+          Volver al Inicio
+        </Link>
 
-        <div className="relative mx-auto flex min-h-screen w-150 max-w-6xl flex-col gap-10 px-6 py-12 lg:flex-row lg:items-center">
-          <div className="flex-1">
-            <div className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-xs uppercase tracking-[0.32em] text-slate-500">
-              Personalización
+        <div className="space-y-4">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Personaliza tu Feed
+          </h1>
+          <p className="text-slate-600">
+            Selecciona las categorías que te interesan para recibir un resumen
+            de noticias personalizado.
+          </p>
+        </div>
+
+        <div className="mt-10 space-y-12">
+          {loading ? (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-24 animate-pulse rounded-lg bg-slate-200"
+                />
+              ))}
             </div>
-            <h1
-              className="mt-6 text-3xl font-semibold text-slate-900 sm:text-4xl"
-              style={{ fontFamily: 'var(--font-fraunces)' }}
-            >
-              Preferencias
-            </h1>
-            <p className="mt-4 max-w-xl text-sm text-slate-600">
-              Tu selección determina los resúmenes que se muestran en tu feed. Guardamos la lista una vez
-              que confirmes.
-            </p>
-
-            <div className="mt-8 rounded-[28px] border border-slate-200/80 bg-white/90 p-6 shadow-[0_24px_60px_-50px_rgba(15,23,42,0.6)] sm:p-8">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p
-                    className="text-xl font-semibold text-slate-900"
-                    style={{ fontFamily: 'var(--font-fraunces)' }}
-                  >
-                    Categorias
-                  </p>
-                </div>
-                <div className="text-xs text-slate-500">
-                  {loading ? 'Cargando categorías...' : `${selectedIds.length} seleccionadas`}
-                </div>
-              </div>
-
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {categories.map((category) => (
-                  <label
-                    key={category.newsCategoryId}
-                    className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm transition hover:-translate-y-0.5"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(category.newsCategoryId)}
-                      onChange={() => handleToggle(category.newsCategoryId)}
-                      className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
-                    />
-                    <span>{category.newsCategoryName}</span>
-                  </label>
-                ))}
-
-                {!loading && categories.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500">
-                    No hay categorías disponibles aún.
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="mt-6 rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800">Hora de notificación</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={shippingHour}
-                      onChange={(event) => {
-                        const nextValue = Number.parseInt(event.target.value, 10);
-                        setShippingHour(Number.isNaN(nextValue) ? 8 : nextValue);
-                      }}
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+          ) : (
+            macrocategories.map((macro) => (
+              <div key={macro.macroCategoryName}>
+                <h2 className="text-lg font-semibold">
+                  {macro.macroCategoryName}
+                </h2>
+                <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                  {macro.categoryDtos.map((category) => (
+                    <label
+                      key={category.id}
+                      className={`flex cursor-pointer items-center justify-center rounded-lg border p-4 text-center text-sm font-medium transition-colors ${
+                        selectedIds.includes(category.id)
+                          ? "border-slate-900 bg-slate-900 text-white"
+                          : "border-slate-200 bg-white hover:bg-slate-100"
+                      }`}
                     >
-                      {Array.from({ length: 24 }, (_, hour) => (
-                        <option key={hour} value={hour}>
-                          {hour.toString().padStart(2, '0')}:00
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                      <input
+                        type="checkbox"
+                        className="sr-only"
+                        checked={selectedIds.includes(category.id)}
+                        onChange={() => handleToggle(category.id)}
+                      />
+                      {category.name}
+                    </label>
+                  ))}
                 </div>
               </div>
+            ))
+          )}
 
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-                <span>{statusCopy[status]}</span>
-                <div className="flex items-center gap-2">
-                  {!isAuthenticated ? (
-                    <Link className="font-semibold text-slate-700 hover:underline" href="/login">
-                      Iniciar sesión
-                    </Link>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={!canSave}
-                    className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
-                  >
-                    Guardar
-                  </button>
-                </div>
-              </div>
+          {!loading && macrocategories.length === 0 && (
+            <div className="rounded-lg border border-dashed border-slate-200 p-8 text-center text-sm text-slate-500">
+              No hay categorías disponibles en este momento.
             </div>
+          )}
 
-            <div className="mt-6 flex flex-wrap items-center gap-4 text-xs text-slate-500">
-              <Link className="hover:underline" href="/">
-                Back to home
-              </Link>
-              <Link className="hover:underline" href="/login">
+          <div>
+            <h2 className="text-lg font-semibold">Hora de Notificación</h2>
+            <div className="mt-4 max-w-xs">
+              <select
+                value={shippingHour}
+                onChange={(e) => setShippingHour(Number(e.target.value))}
+                className="w-full rounded-lg border-slate-200 bg-white px-3 py-2 text-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              >
+                {Array.from({ length: 24 }, (_, hour) => (
+                  <option key={hour} value={hour}>
+                    {`${hour.toString().padStart(2, "0")}:00`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-12 flex items-center justify-between border-t border-slate-200 pt-6">
+          <StatusIndicator status={status} />
+          <div className="flex items-center gap-4">
+            {!isAuthenticated && (
+              <Link
+                href="/login"
+                className="text-sm font-medium text-slate-600 hover:text-slate-900"
+              >
                 Iniciar sesión
               </Link>
-              <Link className="hover:underline" href="/register">
-                Crear cuenta
-              </Link>
-            </div>
+            )}
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={!canSave}
+              className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:hover:scale-100"
+            >
+              {status === "saving" ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                "Guardar Cambios"
+              )}
+            </button>
           </div>
         </div>
       </div>

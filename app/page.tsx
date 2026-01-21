@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import NewsCard from "./components/NewsCard";
+import { Menu, Settings, LogOut, LogIn, UserPlus } from "lucide-react";
 
 type StoryCard = {
   id: number;
@@ -138,119 +139,95 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen bg-[#ECEADE] text-slate-900">
-      <div className="relative lg:h-screen lg:overflow-hidden">
-        <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col gap-8 px-4 py-6 sm:px-6 lg:h-full lg:gap-10 lg:py-10">
-          <main className="flex-1 pb-8">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
-                  Noticias de hoy
-                </p>
-                <h1
-                  className="mt-3 text-3xl font-semibold text-slate-900 sm:text-4xl"
-                  style={{ fontFamily: "var(--font-fraunces)" }}
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <div className="relative mx-auto max-w-6xl px-4 py-12">
+        <header className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
+          <div>
+            <p className="text-sm uppercase tracking-wider text-slate-500">
+              Noticias de hoy
+            </p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
+              InfoWise
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={logout}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition hover:bg-slate-100"
+              >
+                <LogOut className="h-4 w-4" />
+                Cerrar sesión
+              </button>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition hover:bg-slate-100"
                 >
-                  InfoWise
-                </h1>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {isAuthenticated ? (
-                  <button
-                    type="button"
-                    onClick={logout}
-                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition hover:-translate-y-0.5"
-                  >
-                    Cerrar sesión
-                  </button>
-                ) : (
-                  <>
-                    <Link
-                      href="/login"
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition hover:-translate-y-0.5"
-                    >
-                      Iniciar sesión
-                    </Link>
-                    <Link
-                      href="/register"
-                      className="rounded-full border border-transparent bg-slate-900 px-4 py-2 text-sm text-white shadow-sm transition hover:-translate-y-0.5"
-                    >
-                      Crear cuenta
-                    </Link>
-                  </>
-                )}
-                <div className="group relative">
-                  <button
-                    type="button"
-                    aria-label="Abrir menú"
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-5 w-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                    >
-                      <path
-                        d="M4 7h16M4 12h16M4 17h16"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </button>
-                  <div
-                    aria-hidden="true"
-                    className="absolute right-0 top-full h-2 w-40"
-                  />
-                  <div className="pointer-events-none absolute right-0 top-full z-10 mt-2 min-w-[160px] translate-y-2 rounded-2xl border border-slate-200/80 bg-white/95 p-2 text-sm text-slate-700 opacity-0 shadow-lg transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
-                    <Link
-                      href="/setup"
-                      className="flex items-center justify-between rounded-xl px-3 py-2 transition hover:bg-slate-100"
-                    >
-                      Preferencias
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                      >
-                        <path
-                          d="M10 7h7m-7 5h7m-7 5h7M5 7h.01M5 12h.01M5 17h.01"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </Link>
-                  </div>
-                </div>
+                  <LogIn className="h-4 w-4" />
+                  Iniciar sesión
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm text-white shadow-sm transition hover:bg-slate-800"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Crear cuenta
+                </Link>
+              </>
+            )}
+            <div className="group relative">
+              <button
+                type="button"
+                aria-label="Abrir menú"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-100"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+              <div
+                aria-hidden="true"
+                className="absolute right-0 top-full h-2 w-40"
+              />
+              <div className="pointer-events-none absolute right-0 top-full z-10 mt-2 min-w-[160px] translate-y-2 rounded-lg border border-slate-200/80 bg-white/95 p-2 text-sm text-slate-700 opacity-0 shadow-lg transition duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
+                <Link
+                  href="/setup"
+                  className="flex items-center justify-between rounded-md px-3 py-2 transition hover:bg-slate-100"
+                >
+                  Preferencias
+                  <Settings className="h-4 w-4" />
+                </Link>
               </div>
             </div>
+          </div>
+        </header>
 
-            {showEmptyState ? (
-              <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-white/80 px-6 py-10 text-sm text-slate-600">
-                No hay noticias para mostrar por el momento. Puedes cambiar tus{" "}
-                <Link href="/setup" className="underline">
-                  preferencias
-                </Link>{" "}
-                para ver nuevas categorías.
-              </div>
-            ) : (
-              <section className="mt-6 grid grid-cols-1 gap-6 sm:auto-rows-[200px] sm:grid-cols-2 xl:grid-cols-3">
-                {stories.map((story) => (
-                  <NewsCard
-                    key={story.id}
-                    title={story.title}
-                    macroCategory={story.macroCategory}
-                    category={story.category}
-                    summary={story.summary}
-                    date={story.date}
-                    spanClass={story.span}
-                  />
-                ))}
-              </section>
-            )}
-          </main>
-        </div>
+        <main className="mt-10">
+          {showEmptyState ? (
+            <div className="rounded-lg border border-dashed border-slate-300 bg-white/80 px-6 py-10 text-center text-sm text-slate-600">
+              No hay noticias para mostrar por el momento. Puedes cambiar tus{" "}
+              <Link href="/setup" className="font-medium text-slate-900 underline">
+                preferencias
+              </Link>{" "}
+              para ver nuevas categorías.
+            </div>
+          ) : (
+            <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {stories.map((story) => (
+                <NewsCard
+                  key={story.id}
+                  title={story.title}
+                  macroCategory={story.macroCategory}
+                  category={story.category}
+                  summary={story.summary}
+                  date={story.date}
+                  spanClass={story.span}
+                />
+              ))}
+            </section>
+          )}
+        </main>
       </div>
     </div>
   );

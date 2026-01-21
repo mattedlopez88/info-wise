@@ -1,5 +1,10 @@
 import { newsApi } from "./news.client";
-import { MacroCategory, NewsCategory } from "@/src/types/api/types"
+import { MacroCategory, MacroCategoryDto, NewsCategory } from "@/src/types/api/types"
+
+export const getAllMacrocategories = async (): Promise<MacroCategoryDto[]> => {
+  const res = await newsApi.get('/news-management/macrocategories-with-categories/all');
+  return res.data;
+}
 
 export const getAllCategories = async (): Promise<NewsCategory[]> => {
   const res = await newsApi.get('/news-management/categories/all');

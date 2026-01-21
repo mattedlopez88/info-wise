@@ -24,11 +24,17 @@ export interface NewsSummary {
 }
 
 export interface CategoryDto {
+  id: number
   name: string
-  newsSummaryDtos: NewsSummary[]
+  newsSummaryDtos?: NewsSummary[]
 }
 
 export interface MacroCategory {
   name: string
+  categoryDtos: CategoryDto[]
+}
+
+export interface MacroCategoryDto {
+  macroCategoryName: string
   categoryDtos: CategoryDto[]
 }

@@ -5,243 +5,196 @@ import { useMemo, useState } from 'react';
 import { register } from '@/src/lib/api/auth.service';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/src/context/AuthContext';
+import { CheckCircle2, Eye, EyeOff, XCircle } from 'lucide-react';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function RegisterPage() {
   const router = useRouter();
   const auth = useAuth();
-  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  // const [confirmEmail, setConfirmEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [touched, setTouched] = useState({
-    fullName: false,
     email: false,
-    confirmEmail: false,
     password: false,
     confirmPassword: false,
   });
 
   const emailError = useMemo(() => {
-    if (!touched.email) return '';
-    if (!email) return 'Correo es obligatorio.';
+    if (!touched.email || !email) return null;
     if (!emailRegex.test(email)) return 'Ingresa un correo válido.';
-    return '';
+    return null;
   }, [email, touched.email]);
 
   const passwordError = useMemo(() => {
-    if (!touched.password) return '';
-    if (!password) return 'Contraseña es obligatoria.';
+    if (!touched.password || !password) return null;
     if (password.length < 8) return 'Usa al menos 8 caracteres.';
-    return '';
+    return null;
   }, [password, touched.password]);
 
   const confirmPasswordError = useMemo(() => {
-    if (!touched.confirmPassword) return '';
-    if (!confirmPassword) return 'Confirma tu contraseña.';
+    if (!touched.confirmPassword || !confirmPassword) return null;
     if (password !== confirmPassword) return 'Las contraseñas no coinciden.';
-    return '';
+    return null;
   }, [password, confirmPassword, touched.confirmPassword]);
 
-  const nameError = useMemo(() => {
-    if (!touched.fullName) return '';
-    if (!fullName.trim()) return 'El nombre completo es obligatorio.';
-    return '';
-  }, [fullName, touched.fullName]);
-
   const passwordChecks = [
-    { label: 'Al menos 8 caracteres', valid: password.length >= 8 },
-    { label: 'Al menos un número', valid: /\d/.test(password) },
-    { label: 'Al menos una letra', valid: /[A-Za-z]/.test(password) },
+    {
+      label: 'Al menos 8 caracteres',
+      valid: password.length >= 8,
+    },
+    {
+      label: 'Las contraseñas coinciden',
+      valid: password !== '' && password === confirmPassword,
+    },
   ];
 
   const canSubmit =
-    // fullName.trim().length > 0 &&
     emailRegex.test(email) &&
     password.length >= 8 &&
-    /\d/.test(password) &&
-    /[A-Za-z]/.test(password) &&
     password === confirmPassword;
 
-  const handleSubmt = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const res = await register(email, password);
-      auth.login(res);
-      router.push('/setup');
-    } catch (e) {
-      console.error('Registration failed:', e);
-    }
-  }
+    const handleSubmt = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!canSubmit) return;
+  
+      try {
+        const res = await register(email, password);
+        auth.login(res);
+        router.push('/setup');
+      } catch (e) {
+        console.error('Registration failed:', e);
+        // Aquí podrías establecer un estado de error para mostrarlo en la UI
+      }
+    };
 
   return (
-    <div className="min-h-screen bg-[#ECEADE] text-slate-900">
-      <div className="relative min-h-screen overflow-hidden">
-        <div className="pointer-events-none absolute left-[-140px] top-[-120px] h-[340px] w-[340px] rounded-full bg-[#f9ddc6]/70 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-[-180px] right-[-120px] h-[320px] w-[320px] rounded-full bg-[#cfe1d4]/80 blur-3xl" />
-
-        <div className="relative mx-auto flex min-h-screen w-150 max-w-6xl flex-col gap-10 px-6 py-12 lg:flex-row lg:items-center">
-          <div className="flex-1">
-            <div className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-xs uppercase tracking-[0.32em] text-slate-500">
-              Nuevo Miembro
-            </div>
-            <h1
-              className="mt-6 text-3xl font-semibold text-slate-900 sm:text-4xl"
-              style={{ fontFamily: 'var(--font-fraunces)' }}
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <div className="relative mx-auto max-w-md px-4 py-12">
+        <div className="space-y-4 text-center">
+          <h1 className="text-3xl font-bold tracking-tight">Crea tu Cuenta</h1>
+          <p className="text-slate-600">
+            ¿Ya tienes una cuenta?{' '}
+            <Link
+              href="/login"
+              className="font-medium text-slate-900 hover:underline"
             >
-              Crea tu cuenta de InfoWise
-            </h1>
-
-            <div className="mt-8 rounded-[28px] border border-slate-200/80 bg-white/90 p-6 shadow-[0_24px_60px_-50px_rgba(15,23,42,0.6)] sm:p-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-500">InfoWise</p>
-                  <p
-                    className="text-xl font-semibold text-slate-900"
-                    style={{ fontFamily: 'var(--font-fraunces)' }}
-                  >
-                    Regístrate
-                  </p>
-                </div>
-              </div>
-
-              <form
-                className="mt-6 grid gap-5"
-                onSubmit={handleSubmt}
-              >
-                {/* <label className="grid gap-2 text-sm text-slate-700">
-                  Nombre
-                  <input
-                    type="text"
-                    value={fullName}
-                    onChange={(event) => setFullName(event.target.value)}
-                    onBlur={() => setTouched((prev) => ({ ...prev, fullName: true }))}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
-                    placeholder="Alex Rivera"
-                    aria-invalid={Boolean(nameError)}
-                    aria-describedby="fullname-error"
-                  />
-                  {nameError ? (
-                    <span id="fullname-error" className="text-xs text-rose-600">
-                      {nameError}
-                    </span>
-                  ) : null}
-                </label> */}
-
-                <label className="grid gap-2 text-sm text-slate-700">
-                  Correo
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
-                    placeholder="hello@infowise.news"
-                    aria-invalid={Boolean(emailError)}
-                    aria-describedby="email-error"
-                  />
-                  {emailError ? (
-                    <span id="email-error" className="text-xs text-rose-600">
-                      {emailError}
-                    </span>
-                  ) : null}
-                </label>
-
-                <label className="grid gap-2 text-sm text-slate-700">
-                  Contraseña
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
-                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-20 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
-                      placeholder="Crea una contraseña segura"
-                      aria-invalid={Boolean(passwordError)}
-                      aria-describedby="password-error"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium uppercase tracking-[0.2em] text-slate-500"
-                    >
-                      {showPassword ? 'Ocultar' : 'Mostrar'}
-                    </button>
-                  </div>
-                  {passwordError ? (
-                    <span id="password-error" className="text-xs text-rose-600">
-                      {passwordError}
-                    </span>
-                  ) : null}
-                </label>
-
-                <label className="grid gap-2 text-sm text-slate-700">
-                  Confirmar contraseña
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(event) => setConfirmPassword(event.target.value)}
-                    onBlur={() => setTouched((prev) => ({ ...prev, confirmPassword: true }))}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
-                    placeholder="Repite tu contraseña"
-                    aria-invalid={Boolean(confirmPasswordError)}
-                    aria-describedby="confirm-password-error"
-                  />
-                  {confirmPasswordError ? (
-                    <span id="confirm-password-error" className="text-xs text-rose-600">
-                      {confirmPasswordError}
-                    </span>
-                  ) : null}
-                </label>
-
-                <div className="rounded-2xl border border-slate-200/80 bg-[#f8f1e4] p-4 text-xs text-slate-600">
-                  <p className="text-[11px] uppercase tracking-[0.32em] text-slate-500">Verificaciones de contraseña</p>
-                  <div className="mt-3 grid gap-2">
-                    {passwordChecks.map((item) => (
-                      <div key={item.label} className="flex items-center gap-2">
-                        <span
-                          className={`h-2 w-2 rounded-full ${
-                            item.valid ? 'bg-emerald-500' : 'bg-slate-300'
-                          }`}
-                        />
-                        <span>{item.label}</span>
-                      </div>
-                    ))}
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`h-2 w-2 rounded-full ${
-                          password && confirmPassword && password === confirmPassword
-                            ? 'bg-emerald-500'
-                            : 'bg-slate-300'
-                        }`}
-                      />
-                      <span>Contraseña coincide</span>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={!canSubmit}
-                  className="mt-2 w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-400"
-                >
-                  Crear cuenta
-                </button>
-              </form>
-
-              <p className="mt-6 text-xs text-slate-500">
-                ¿Ya tienes una cuenta?{' '}
-                <Link className="font-semibold text-slate-700 hover:underline" href="/login">
-                  Iniciar sesión
-                </Link>
-              </p>
-            </div>
-          </div>
+              Inicia sesión
+            </Link>
+          </p>
         </div>
+
+        <form onSubmit={handleSubmt} className="mt-10 space-y-6">
+          <div className="space-y-2">
+            <label
+              htmlFor="email"
+              className="text-sm font-medium text-slate-700"
+            >
+              Correo Electrónico
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setTouched((p) => ({ ...p, email: true }))}
+              className="w-full rounded-lg border-slate-200 bg-white px-3 py-2 text-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              placeholder="tu@correo.com"
+              required
+            />
+            {emailError && (
+              <p className="text-xs text-red-500">{emailError}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium text-slate-700"
+            >
+              Contraseña
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => setTouched((p) => ({ ...p, password: true }))}
+                className="w-full rounded-lg border-slate-200 bg-white px-3 py-2 pr-10 text-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                placeholder="Crea una contraseña"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+            {passwordError && (
+              <p className="text-xs text-red-500">{passwordError}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="confirmPassword"
+              className="text-sm font-medium text-slate-700"
+            >
+              Confirmar Contraseña
+            </label>
+            <input
+              id="confirmPassword"
+              type={showPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              onBlur={() => setTouched((p) => ({ ...p, confirmPassword: true }))}
+              className="w-full rounded-lg border-slate-200 bg-white px-3 py-2 text-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              placeholder="Repite tu contraseña"
+              required
+            />
+            {confirmPasswordError && (
+              <p className="text-xs text-red-500">{confirmPasswordError}</p>
+            )}
+          </div>
+
+          {touched.password && (
+            <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-4">
+              {passwordChecks.map((check) => (
+                <div key={check.label} className="flex items-center gap-2">
+                  {check.valid ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-slate-400" />
+                  )}
+                  <span
+                    className={`text-xs ${
+                      check.valid ? 'text-slate-700' : 'text-slate-500'
+                    }`}
+                  >
+                    {check.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            className="w-full rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:hover:scale-100"
+          >
+            Crear Cuenta
+          </button>
+        </form>
       </div>
     </div>
   );
