@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useAuth } from "@/src/context/AuthContext";
 import { getNewsByUser } from "@/src/lib/api/news.service";
 import { getUserPreferences } from "@/src/lib/api/user.service";
@@ -32,12 +32,13 @@ const formatStoryDate = (dateString?: string) => {
   if (!dateString) return "—";
   const parsed = new Date(dateString);
   if (Number.isNaN(parsed.getTime())) return "—";
-  return parsed.toLocaleString([], {
-    month: "short",
+  const formatter = new Intl.DateTimeFormat("es-EC", {
+    timeZone: "America/Guayaquil",
     day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   });
+  return formatter.format(parsed);
 };
 
 const buildStories = (data: MacroCategory[]): StoryCard[] => {
@@ -79,13 +80,13 @@ export default function Home() {
   useEffect(() => {
     let active = true;
     const loadNews = async () => {
-        if (!isAuthenticated || !user?.userId) {
-          console.debug("news: no session, skipping fetch");
-          if (!active) return;
-          setHasPreferences(false);
-          setStories([]);
-          return;
-        }
+      if (!isAuthenticated || !user?.userId) {
+        console.debug("news: no session, skipping fetch");
+        if (!active) return;
+        setHasPreferences(false);
+        setStories([]);
+        return;
+      }
 
       setLoadingStories(true);
       let preferencesFound = false;
@@ -207,7 +208,10 @@ export default function Home() {
           {showEmptyState ? (
             <div className="rounded-lg border border-dashed border-slate-300 bg-white/80 px-6 py-10 text-center text-sm text-slate-600">
               No hay noticias para mostrar por el momento. Puedes cambiar tus{" "}
-              <Link href="/setup" className="font-medium text-slate-900 underline">
+              <Link
+                href="/setup"
+                className="font-medium text-slate-900 underline"
+              >
                 preferencias
               </Link>{" "}
               para ver nuevas categorías.
