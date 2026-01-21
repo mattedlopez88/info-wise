@@ -21,7 +21,7 @@ export default function NewsCard({
 
   return (
     <article
-      className={`group relative flex h-full flex-col justify-between rounded-2xl border border-slate-200/80 px-5 py-4 transition hover:outline hover:outline-2 hover:outline-slate-300 ${spanClass ?? ""}`}
+      className={`group relative flex flex-col justify-between rounded-2xl border border-slate-200/80 py-4 transition hover:outline hover:outline-2 hover:outline-slate-300 px-5 ${spanClass ?? ""}`}
     >
       <div className="relative">
         <p className="text-xs uppercase tracking-[0.32em] text-slate-500">

@@ -217,7 +217,7 @@ export default function Home() {
               para ver nuevas categorías.
             </div>
           ) : (
-            <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <section className="grid grid-cols-2 gap-4">
               {stories.map((story) => (
                 <NewsCard
                   key={story.id}
